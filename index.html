@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="uz-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O'QI — o'zbekcha elektron kutubxona</title>
+<meta name="description" content="O'zbek tilidagi kitoblar katalogi: qidiruv, janrlar bo'yicha tanlash, o'qish va o'qish joyini saqlash. Public domain asarlar, oflayn ishlaydi.">
+<meta name="theme-color" content="#12433b">
+<link rel="canonical" href="https://oqi.uz/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="O'QI">
+<meta property="og:title" content="O'QI — o'zbekcha elektron kutubxona">
+<meta property="og:description" content="Qidiruv, janrlar, o'qish jarayonini saqlash. Public domain asarlar asosidagi katalog.">
+<meta property="og:locale" content="uz_UZ">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="assets/oqi-og.png">
+<meta property="og:image" content="assets/oqi-og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/oqi-icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Asosiy qismga o'tish</a>
+
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="Asosiy menyu">
+    <a class="brand" href="#/home" aria-label="O'QI — bosh sahifa">
+      <img class="brand__full" src="assets/oqi-wordmark.png" alt="O'QI" width="112" height="53">
+      <img class="brand__mini" src="assets/oqi-icon-180.png" alt="O'QI" width="32" height="32">
+    </a>
+
+    <nav class="nav" id="nav">
+      <button class="nav__item" data-route="home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg>
+        <span>Bosh sahifa</span>
+      </button>
+      <button class="nav__item" data-route="catalog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h5v14H4zM11 5h4v14h-4zM17 5h3v14h-3z"/></svg>
+        <span>Katalog</span>
+      </button>
+      <button class="nav__item" data-route="library">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z"/></svg>
+        <span>Kutubxonam</span>
+      </button>
+      <button class="nav__item" data-route="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>
+        <span>Sozlamalar</span>
+      </button>
+    </nav>
+
+    <div class="sidebar__foot">
+      <div class="streak">
+        <span class="streak__num" id="streakNum">0</span>
+        <span class="streak__lbl">kitob kutubxonangizda</span>
+      </div>
+      <button class="icon-btn sidebar__collapse" id="collapseBtn" aria-label="Menyuni yig'ish" aria-expanded="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <header class="topbar">
+      <button class="icon-btn topbar__menu" id="menuBtn" aria-label="Menyuni ochish">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        <input id="searchInput" type="search" placeholder="Kitob yoki muallif izlang" autocomplete="off" aria-label="Qidiruv">
+        <kbd class="search__kbd">Ctrl K</kbd>
+      </label>
+
+      <div class="topbar__right">
+        <button class="btn btn--ghost" id="themeBtn" aria-label="Mavzuni almashtirish">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8.5 8.5 0 1 0 20 13.5z"/></svg>
+        </button>
+        <div class="avatar" aria-hidden="true">K</div>
+      </div>
+    </header>
+
+    <div class="view" id="view" role="region" aria-live="polite"></div>
+
+    <footer class="site-foot">
+      <span>O'QI — ochiq kutubxona</span>
+      <span class="site-foot__dot">·</span>
+      <span>Barcha matnlar public domain yoki aniq litsenziyali</span>
+      <span class="site-foot__dot">·</span>
+      <span>2026</span>
+    </footer>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<section class="reader" id="reader" aria-label="O'quvchi oynasi" hidden>
+  <header class="reader__bar">
+    <button class="icon-btn" id="readerClose" aria-label="Yopish">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="reader__title" id="readerTitle">—</div>
+    <div class="reader__tools">
+      <button class="icon-btn" id="fontMinus" aria-label="Shriftni kichraytirish">A−</button>
+      <button class="icon-btn" id="fontPlus" aria-label="Shriftni kattalashtirish">A+</button>
+      <button class="icon-btn" id="readerTheme" aria-label="O'qish mavzusi">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5v15"/></svg>
+      </button>
+      <button class="icon-btn" id="bookmarkBtn" aria-label="Xatcho'p qo'yish">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v16l-5-3.6L7 20z"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="reader__scroll" id="readerScroll">
+    <article class="reader__page" id="readerPage"></article>
+  </div>
+  <footer class="reader__foot">
+    <button class="btn btn--quiet" id="prevCh">Oldingi</button>
+    <div class="progress" aria-hidden="true"><span id="readerProgress"></span></div>
+    <span class="reader__pct" id="readerPct">0%</span>
+    <button class="btn btn--quiet" id="nextCh">Keyingi</button>
+  </footer>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/texts.js"></script>
+<script src="assets/app.js"></script>
+<script>
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+</script>
+</body>
+</html>
