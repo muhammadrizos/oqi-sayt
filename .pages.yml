@@ -1,0 +1,34 @@
+media:
+  input: assets
+  output: /assets
+
+content:
+  - name: books
+    label: Kitoblar
+    type: file
+    path: data/books.json
+    format: json
+    list: true
+    fields:
+      - {name: id, label: ID, type: string, required: true}
+      - {name: title, label: Nomi, type: string, required: true}
+      - {name: original, label: Asl nomi, type: string}
+      - {name: author, label: Muallif, type: string, required: true}
+      - {name: authorFull, label: Muallif to'liq, type: string}
+      - {name: year, label: Yil, type: number}
+      - {name: genre, label: Janr, type: string}
+      - {name: lang, label: Til, type: string}
+      - {name: pages, label: Sahifalar, type: number}
+      - {name: desc, label: Tavsif, type: text}
+      - name: cover
+        label: Muqova ranglari
+        type: object
+        fields:
+          - {name: c1, label: Asosiy rang, type: string}
+          - {name: c2, label: Ikkinchi rang, type: string}
+          - {name: ink, label: To'q matn, type: string}
+      - {name: license, label: Huquq holati, type: string}
+      - {name: source, label: Manba, type: string}
+      - {name: added, label: Tartib, type: number}
+      - {name: popularity, label: Ommaballik, type: number}
+      - {name: textKind, label: Matn holati, type: string}
