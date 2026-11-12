@@ -28,6 +28,7 @@
   };
 
   let state = load();
+  let BOOKS = window.BOOKS || [];
   const genres = Object.fromEntries(GENRES.map(g => [g.id, g.label]));
   const langs = Object.fromEntries(LANGS.map(l => [l.id, l.label]));
 
@@ -262,8 +263,14 @@
           "</div>" +
           '<div class="license">' +
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="M9.5 12.2l1.8 1.8 3.4-3.6"/></svg>' +
-            "<div><strong>Huquq holati:</strong> " + (b.license === "public-domain" ? "public domain — erkin tarqatish mumkin." : "tekshirilmoqda.") +
-            "<br><span style=\"color:var(--ink-3)\">Manba: " + esc(b.source) + "</span></div>" +
+            "<div><strong>Huquq holati:</strong> " +
+              (b.license === "public-domain"
+                ? "public domain — erkin tarqatish mumkin."
+                : b.license === "cc-by-4.0"
+                  ? "<a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener noreferrer'>CC BY 4.0</a> — manbani ko'rsatgan holda tarqatish va moslashtirish mumkin."
+                  : "tekshirilmoqda.") +
+            "<br><span style=\"color:var(--ink-3)\">Manba: " + esc(b.source) + "</span>" +
+            (b.translation ? "<br><span style=\"color:var(--ink-3)\">Tarjima: " + esc(b.translation) + "</span>" : "") + "</div>" +
           "</div>" +
         "</div>" +
         (function () {
@@ -428,17 +435,31 @@
   const reader = {
     id: null,
     ch: 0,
+    page: 0,
+    pageCount: 1,
+    coverOpen: true,
+    turning: false,
+    pagesPerSpread() {
+      return window.matchMedia("(max-width: 760px)").matches ? 1 : 2;
+    },
     open(id) {
       const b = bookById(id);
       const data = window.TEXTS && window.TEXTS[id];
       if (!b) return;
       if (!data) { toast("Bu kitobning matni hali qo'shilmagan"); return; }
       this.id = id;
-      this.ch = (state.progress[id] && state.progress[id].chapter) || 0;
+      const saved = state.progress[id];
+      this.ch = Math.min(saved ? saved.chapter || 0 : 0, data.chapters.length - 1);
+      this.coverOpen = true;
+      this.turning = false;
       $("#reader").hidden = false;
       $("#reader").dataset.readerTheme = state.settings.readerTheme;
       $("#reader").style.setProperty("--reader-font", state.settings.font + "px");
       $("#readerTitle").textContent = b.title + " · " + b.author;
+      $("#readerCoverFront").innerHTML = coverHTML(b);
+      $("#readerCover").hidden = false;
+      $("#readerCover").className = "reader__cover";
+      $("#readerBook").classList.add("reader__book--covered");
       this.paintChapter();
       document.body.style.overflow = "hidden";
       $("#readerClose").focus();
@@ -449,44 +470,153 @@
       const ch = data.chapters[this.ch] || data.chapters[0];
       const el = $("#readerScroll");
       $("#readerPage").innerHTML = "<h2>" + esc(ch.title) + "</h2>" + ch.paragraphs.map(p => "<p>" + esc(p) + "</p>").join("");
+      el.scrollLeft = 0;
       el.scrollTop = 0;
       const saved = state.progress[this.id];
-      if (saved && saved.chapter === this.ch && saved.scroll > 0.01) {
-        requestAnimationFrame(() => {
-          el.scrollTop = saved.scroll * Math.max(0, el.scrollHeight - el.clientHeight);
-        });
-      }
-      this.updateProgress();
-      $("#prevCh").disabled = this.ch === 0;
-      $("#nextCh").disabled = this.ch >= data.chapters.length - 1;
+      const restore = saved && saved.chapter === this.ch;
+      const lastPage = this._openLastPage;
+      this._openLastPage = false;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        this.pageCount = this.measurePages();
+        if (lastPage) this.page = this.pageCount - 1;
+        else if (restore) {
+          this.page = Number.isInteger(saved.page)
+            ? saved.page
+            : Math.round((saved.scroll || 0) * (this.pageCount - 1));
+        } else this.page = 0;
+        this.goToPage(this.page);
+        this.updateProgress();
+        this.updateButtons();
+      }));
       $("#bookmarkBtn").style.color = (state.bookmarks[this.id] || []).length ? "var(--brass)" : "";
     },
+    measurePages() {
+      const el = $("#readerScroll");
+      return Math.max(1, Math.ceil((el.scrollWidth - 1) / Math.max(1, el.clientWidth)));
+    },
+    goToPage(page) {
+      const el = $("#readerScroll");
+      this.page = Math.max(0, Math.min(this.pageCount - 1, page));
+      el.scrollLeft = this.page * el.clientWidth;
+      this.updateButtons();
+    },
+    updateButtons() {
+      if (!this.id) return;
+      const data = window.TEXTS[this.id];
+      const perSpread = this.pagesPerSpread();
+      const start = this.page * perSpread + 1;
+      const end = Math.min(start + perSpread - 1, this.pageCount * perSpread);
+      $("#readerCounter").textContent = this.coverOpen
+        ? "Muqova"
+        : start + (end > start ? "–" + end : "") + " / " + this.pageCount * perSpread;
+      $("#prevCh").disabled = this.turning || this.coverOpen;
+      $("#nextCh").disabled = this.turning || (!this.coverOpen && this.ch === data.chapters.length - 1 && this.page === this.pageCount - 1);
+    },
+    turnCover(open) {
+      if (this.turning) return;
+      this.turning = true;
+      const cover = $("#readerCover");
+      const book = $("#readerBook");
+      if (open) {
+        cover.className = "reader__cover reader__cover--opening";
+      } else {
+        cover.hidden = false;
+        book.classList.add("reader__book--covered");
+        cover.className = "reader__cover reader__cover--closing";
+      }
+      this.updateButtons();
+      const finish = () => {
+        cover.removeEventListener("animationend", finish);
+        cover.hidden = open;
+        cover.className = "reader__cover";
+        this.coverOpen = !open;
+        this.turning = false;
+        if (open) book.classList.remove("reader__book--covered");
+        this.updateProgress();
+        this.updateButtons();
+      };
+      cover.addEventListener("animationend", finish, { once: true });
+    },
+    turnPage(direction, done) {
+      if (this.turning) return;
+      this.turning = true;
+      const flip = $("#readerFlip");
+      flip.hidden = false;
+      flip.className = "reader__flip";
+      void flip.offsetWidth;
+      flip.classList.add(direction === "next" ? "reader__flip--next" : "reader__flip--prev");
+      this.updateButtons();
+      const finish = () => {
+        flip.removeEventListener("animationend", finish);
+        flip.hidden = true;
+        flip.className = "reader__flip";
+        this.turning = false;
+        done();
+      };
+      flip.addEventListener("animationend", finish, { once: true });
+    },
     updateProgress() {
+      if (!this.id) return;
       const data = window.TEXTS[this.id];
       if (!data) return;
-      const el = $("#readerScroll");
-      const inner = el.scrollHeight - el.clientHeight;
-      const ratio = inner > 20 ? Math.min(1, Math.max(0, el.scrollTop / inner)) : 1;
+      const ratio = this.coverOpen ? 0 : this.pageCount > 1 ? this.page / (this.pageCount - 1) : 1;
       const total = data.chapters.length;
       const pct = Math.min(100, Math.round(((this.ch + ratio) / total) * 100));
       $("#readerProgress").style.width = pct + "%";
       $("#readerPct").textContent = pct + "%";
-      state.progress[this.id] = { pct, chapter: this.ch, at: Date.now(), scroll: ratio };
+      state.progress[this.id] = { pct, chapter: this.ch, page: this.page, at: Date.now(), scroll: ratio };
       clearTimeout(this._t);
       this._t = setTimeout(save, 350);
     },
+    reflow() {
+      if (!this.id || this.turning) return;
+      const ratio = this.pageCount > 1 ? this.page / (this.pageCount - 1) : 0;
+      requestAnimationFrame(() => {
+        this.pageCount = this.measurePages();
+        this.goToPage(Math.round(ratio * (this.pageCount - 1)));
+        this.updateProgress();
+      });
+    },
     close() {
       $("#reader").hidden = true;
+      $("#readerCover").hidden = true;
+      $("#readerFlip").hidden = true;
+      $("#readerBook").classList.remove("reader__book--covered");
       document.body.style.overflow = "";
       this.id = null;
+      this.turning = false;
       render();
     },
     next() {
+      if (!this.id || this.turning) return;
+      if (this.coverOpen) { this.turnCover(true); return; }
       const data = window.TEXTS[this.id];
-      if (this.ch < data.chapters.length - 1) { this.ch++; this.paintChapter(); }
+      if (this.page < this.pageCount - 1) {
+        this.turnPage("next", () => {
+          this.goToPage(this.page + 1);
+          this.updateProgress();
+        });
+      } else if (this.ch < data.chapters.length - 1) {
+        this.turnPage("next", () => {
+          this.ch++;
+          this.paintChapter();
+        });
+      }
     },
     prev() {
-      if (this.ch > 0) { this.ch--; this.paintChapter(); }
+      if (!this.id || this.turning || this.coverOpen) return;
+      if (this.page > 0) {
+        this.turnPage("prev", () => {
+          this.goToPage(this.page - 1);
+          this.updateProgress();
+        });
+      } else if (this.ch > 0) {
+        this.turnPage("prev", () => {
+          this.ch--;
+          this._openLastPage = true;
+          this.paintChapter();
+        });
+      } else this.turnCover(false);
     },
     bookmark() {
       if (!this.id) return;
@@ -601,12 +731,24 @@
     save();
     toast("O'qish mavzusi: " + ({ light: "oq", sepia: "sepiya", dark: "qorong'i" })[next]);
   });
-  $("#readerScroll").addEventListener("scroll", () => reader.updateProgress(), { passive: true });
+  let touchStartX = null;
+  $("#readerScroll").addEventListener("pointerdown", (e) => {
+    touchStartX = e.pointerType === "touch" ? e.clientX : null;
+  });
+  $("#readerScroll").addEventListener("pointerup", (e) => {
+    if (touchStartX === null) return;
+    const distance = e.clientX - touchStartX;
+    touchStartX = null;
+    if (Math.abs(distance) > 55) distance < 0 ? reader.next() : reader.prev();
+  });
+  $("#readerScroll").addEventListener("pointercancel", () => { touchStartX = null; });
+  window.addEventListener("resize", () => reader.reflow());
 
   function bumpFont(d) {
     const v = Math.min(24, Math.max(16, state.settings.font + d));
     state.settings.font = v;
     $("#reader").style.setProperty("--reader-font", v + "px");
+    reader.reflow();
     save();
     toast("Shrift: " + v + "px");
   }
@@ -646,8 +788,8 @@
       }
     }
     if (!$("#reader").hidden) {
-      if (e.key === "ArrowRight") reader.next();
-      if (e.key === "ArrowLeft") reader.prev();
+      if (e.key === "ArrowRight") { e.preventDefault(); reader.next(); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); reader.prev(); }
     }
   });
 
@@ -660,4 +802,13 @@
   else if (["home", "catalog", "library", "settings"].includes(hash)) state.route = hash;
 
   render();
+
+  // Katalog ma'lumotlari — data/books.json (Pages CMS shu faylni tahrirlaydi).
+  // Fayl topilmasa yoki file:// rejimida bo'lsa, assets/data.js dagi zaxira ishlatiladi.
+  fetch("data/books.json", { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (Array.isArray(d) && d.length) { BOOKS = d; render(); }
+    })
+    .catch(function () {});
 })();
