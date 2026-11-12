@@ -1,7 +1,7 @@
 /* Namuna katalog. Har bir yozuvda huquq holati ko'rsatilgan.
    Faqat public domain yoki aniq litsenziyali asarlar kiritiladi. */
 
-const BOOKS = [
+window.BOOKS = [
   {
     id: "baxtli-shahzoda",
     title: "Baxtli shahzoda",
@@ -289,6 +289,25 @@ const BOOKS = [
     added: 45,
     popularity: 76,
     textKind: "pending"
+  },
+  {
+    id: "gulliverning-sayohatlari",
+    title: "Gulliverning sayohatlari",
+    original: "Gulliver's Travels (Travels into Several Remote Nations of the World)",
+    author: "Jonatan Suift",
+    authorFull: "Jonathan Swift (1667–1745)",
+    year: 1726,
+    genre: "sarguzasht",
+    lang: "uz",
+    pages: 224,
+    desc: "AI yordamida ingliz tilidan o'zbekchaga tarjima qilingan namuna: birinchi uch sayohat (25 bob). To'rtinchi sayohat kiritilmagan.",
+    cover: { c1: "#34434a", c2: "#637b77" },
+    license: "cc-by-4.0",
+    translation: "Ingliz tilidan o'zbekchaga, AI yordamida",
+    source: "OQI Nashriyoti tarjimasi · PDFdan ajratilib web uchun formatlangan",
+    added: 48,
+    popularity: 90,
+    textKind: "sample"
   }
 ];
 

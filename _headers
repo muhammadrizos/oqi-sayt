@@ -11,6 +11,6 @@ Referrer-Policy: strict-origin-when-cross-origin
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
 
-/manifest.webmanifest
-  Content-Type: application/manifest+json; charset=utf-8
+/manifest.json
+  Content-Type: application/json; charset=utf-8
   Cache-Control: public, max-age=3600

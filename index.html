@@ -6,7 +6,7 @@
 <title>O'QI — o'zbekcha elektron kutubxona</title>
 <meta name="description" content="O'zbek tilidagi kitoblar katalogi: qidiruv, janrlar bo'yicha tanlash, o'qish va o'qish joyini saqlash. Public domain asarlar, oflayn ishlaydi.">
 <meta name="theme-color" content="#12433b">
-<link rel="canonical" href="https://oqi.uz/">
+<link rel="canonical" href="https://oqi-sayt.onrender.com/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="O'QI">
@@ -18,10 +18,11 @@
 <meta property="og:image" content="assets/oqi-og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:url" content="https://oqi-sayt.onrender.com/">
 
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/oqi-icon-180.png">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -115,14 +116,27 @@
       </button>
     </div>
   </header>
-  <div class="reader__scroll" id="readerScroll">
-    <article class="reader__page" id="readerPage"></article>
+  <div class="reader__stage">
+    <div class="reader__book" id="readerBook">
+      <div class="reader__scroll" id="readerScroll">
+        <article class="reader__page" id="readerPage"></article>
+      </div>
+      <div class="reader__cover" id="readerCover" hidden aria-hidden="true">
+        <div class="reader__cover-face reader__cover-face--front" id="readerCoverFront"></div>
+        <div class="reader__cover-face reader__cover-face--back"></div>
+      </div>
+      <div class="reader__flip" id="readerFlip" hidden aria-hidden="true">
+        <div class="reader__flip-face reader__flip-face--front"></div>
+        <div class="reader__flip-face reader__flip-face--back"></div>
+      </div>
+    </div>
   </div>
   <footer class="reader__foot">
-    <button class="btn btn--quiet" id="prevCh">Oldingi</button>
+    <button class="btn btn--quiet" id="prevCh">Oldingi varaq</button>
+    <span class="reader__counter" id="readerCounter">Muqova</span>
     <div class="progress" aria-hidden="true"><span id="readerProgress"></span></div>
     <span class="reader__pct" id="readerPct">0%</span>
-    <button class="btn btn--quiet" id="nextCh">Keyingi</button>
+    <button class="btn btn--quiet" id="nextCh">Keyingi varaq</button>
   </footer>
 </section>
 
@@ -130,6 +144,7 @@
 
 <script src="assets/data.js"></script>
 <script src="assets/texts.js"></script>
+<script src="data/texts/gulliverning-sayohatlari.js"></script>
 <script src="assets/app.js"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {

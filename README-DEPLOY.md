@@ -1,122 +1,108 @@
 # O'QI — sayt versiyasi
 
-Bu papka — saytning o'zi. Ichida server kodi yo'q: faqat statik fayllar, ya'ni har qanday
-bepul hostingga yuklash mumkin.
+Bu papka — saytning o'zi. Server kodi yo'q: faqat statik fayllar, ya'ni har qanday
+bepul hostingga yuklash mumkin (Render, Netlify, GitHub Pages, Cloudflare Pages).
+
+## Tuzilma
 
 ```
-index.html            bosh sahifa (barcha ekranlar shu yerda)
-assets/styles.css     dizayn
-assets/data.js        katalog (16 kitob)
-assets/texts.js       matnlar
+index.html            barcha ekranlar (bosh sahifa, katalog, kitob, o'quvchi, sozlamalar)
+assets/styles.css     dizayn: ranglar, tipografika, animatsiyalar
 assets/app.js         mantiq: qidiruv, o'quvchi, saqlash
-manifest.webmanifest  telefonga "ilova sifatida o'rnatish" uchun
-sw.js                 oflayn kesh (internet uzilsa ham ochiladi)
+assets/data.js        zaxira katalog (faqat file:// rejimi uchun)
+data/books.json       ASOSIY katalog — Pages CMS shu faylni tahrirlaydi
+assets/texts.js       kitob matnlari
+assets/oqi-*.png      logotip, ikonkalar, OG rasm
+manifest.json         telefonga "ilova sifatida o'rnatish"
+sw.js                 oflayn kesh
+.pages.yml            Pages CMS sozlamasi
+404.html              topilmagan sahifa
+_headers              Netlify uchun keshlash sarlavhalari (Render o'qimaydi)
 robots.txt            qidiruv tizimlari uchun
-assets/oqi-wordmark.png   logotip (shaffof fon, qora)
-assets/oqi-icon-*.png     ilova belgisi (sariq fon, 180/192/512)
-assets/oqi-og.png         ijtimoiy tarmoq kartochkasi (1200×630)
-favicon-32.png            yorliqdagi kichik belgi
 ```
 
 ## 1. Kompyuterda ko'rish
 
 `index.html` ni ikki marta bosing — brauzerda ochiladi.
-Yoki lokal server bilan (service worker va "o'rnatish" tugmasi to'liq ishlashi uchun):
+To'liq rejim (service worker, JSON katalog) uchun lokal server kerak:
 
 ```powershell
 cd web
 npx serve .
 ```
 
-## 2. Internetga chiqarish — 3 yo'l
+## 2. Joylashtirish
 
-### A. Netlify Drop (eng tez, 2 daqiqa)
-1. https://app.netlify.com/drop oching
-2. `web` papkasini sudrab tashlang
-3. Tayyor — havola beriladi (masalan `kitobxon.netlify.app`)
-4. Keyin "Site settings → Domain" da o'z domeningizni ulashingiz mumkin
+**Render** (hozirgi asosiy): yangi Static Site → reponi ulang → branch `main`,
+publish directory `.` → har commit'da avtomatik deploy.
 
-Ro'yxatdan o'tish bepul. Kartochka talab qilinmaydi.
+**Netlify Drop**: https://app.netlify.com/drop → papkani sudrab tashlang.
 
-### B. GitHub Pages (bepul, kod bilan birga)
-```powershell
-# GitHub da bo'sh repository yarating, so'ng:
-cd web
-git init
-git add .
-git commit -m "O'QI sayti"
-git branch -M main
-git remote add origin https://github.com/<login>/kitobxon.git
-git push -u origin main
-```
-So'ng repository → **Settings → Pages** → Branch: `main`, papka: `/ (root)` → Save.
-2-3 daqiqadan keyin `https://<login>.github.io/kitobxon/` da ochiladi.
+**GitHub Pages**: Settings → Pages → branch `main`, papka `/ (root)`.
 
-### C. Cloudflare Pages yoki Vercel
-Ikkisida ham "Framework: None / Static" tanlanadi, build buyrug'i bo'sh,
-chiqish papkasi `.` (yoki `web`) — shu bilan tamom.
+## 3. Kitoblarni brauzerdan tahrirlash (Pages CMS)
 
-## 3. Domeningizni ulash
+1. https://app.pagescms.org → **Sign in with GitHub**
+2. Repozitoriyni tanlang (`muhammadrizos/oqi.uz` yoki sizning repongiz)
+3. Chap menyuda **Kitoblar** → kitobni oching yoki **Add** bilan yangisini qo'shing
+4. **Save** → o'zgarish repoga commit bo'ladi → Render 1–2 daqiqada qayta joylaydi
 
-Domen sotib olgach (masalan `.uz` — uzinfocom orqali):
-- Netlify: **Domain management → Add domain** → DNS da `CNAME` yozuvi
-- Cloudflare: domenni to'g'ridan-to'g'ri Cloudflare'ga o'tkazing, `A`/`CNAME` avtomatik
+Maydonlar `.pages.yml` da belgilangan: nomi, muallif, janr, til, sahifalar, tavsif,
+muqova ranglari, huquq holati, matn holati.
 
-HTTPS avtomatik yoqiladi. Bu muhim: `sw.js` va "ilova sifatida o'rnatish"
-faqat HTTPS da ishlaydi.
+**Muhim:**
+- `id` har bir kitobda unikal bo'lsin (lotin harflar va chiziqcha)
+- `data/books.json` — asosiy manba; `assets/data.js` faqat file:// uchun zaxira
+- `assets/texts.js` (kitob matnlari) hozircha qo'lda tahrirlanadi
 
-## 4. Yangilash
+## 4. Domen ulash
 
-Faylni o'zgartirib, hostingga qayta yuklang. Service worker eski keshni ko'rsa,
-`sw.js` ichidagi `CACHE = "oqi-v1"` ni `v2` ga oshiring — foydalanuvchilar yangi
-versiyani oladi.
+**Render**: Settings → Custom Domains → domenni qo'shing, keyin DNS'da:
 
-## 5. Kitob qo'shish
+| Tur | Nom | Qiymat |
+|---|---|---|
+| A | `@` | Render ko'rsatadigan IP |
+| CNAME | `www` | `<sayt>.onrender.com` |
 
-`assets/data.js` ga yangi yozuv qo'shing, `assets/texts.js` ga matnini bering:
+**GitHub Pages** uchun:
+
+| Tur | Nom | Qiymat |
+|---|---|---|
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| CNAME | `www` | `<login>.github.io` |
+
+HTTPS avtomatik yoqiladi. Domen ulangach `index.html` dagi `canonical` va
+`og:url` ni yangilash kerak.
+
+## 5. Yangilash tartibi
+
+1. `sw.js` ichidagi `CACHE` qiymatini oshiring (`oqi-v4` → `oqi-v5`)
+2. Fayllarni commit qiling
+3. Hosting o'zi qayta joylaydi; brauzerda Ctrl+F5
+
+## 6. Ma'lumot modeli
 
 ```js
 {
-  id: "yangi-kitob",
-  title: "Kitob nomi",
-  original: "Original nomi",
-  author: "Muallif",
-  authorFull: "Muallif (yil–yil)",
-  year: 1900, genre: "roman", lang: "uz", pages: 300,
-  desc: "Qisqa tavsif.",
-  cover: { c1: "#f5c62b", c2: "#e0a516", ink: "#1b1710" },
-  license: "public-domain",
-  source: "Manba nomi va havolasi",
-  added: 50, popularity: 70,
-  textKind: "full"   // "full" | "sample" | "pending"
+  id, title, original, author, authorFull, year,
+  genre, lang, pages, desc,
+  cover: { c1, c2, ink },
+  license, source, added, popularity,
+  textKind: "full" | "sample" | "pending"
 }
 ```
 
-**Qoida:** huquqi tekshirilmagan matnni `full` qilib qo'ymang. Public domain yoki
+**Qoida:** huquqi tekshirilmagan matnni `full` qilib qo'ymang — public domain yoki
 yozma litsenziya bo'lishi shart.
 
-## 6. Hozirgi holat
+## 7. Hozirgi holat
 
 - 16 kitob katalogda
 - 1 ta to'liq matn («Baxtli shahzoda», o'zbekcha tarjima)
 - 3 ta namuna parcha
 - 12 tasida «Matn kutilmoqda»
 
-Ya'ni sayt ishlaydi, lekin kontent hali to'liq emas — bu keyingi bosqich.
-
-## 7. Joylashtirish uchun tayyor fayllar
-
-| Fayl | Nima qiladi |
-|---|---|
-| _headers | Netlify/Cloudflare uchun keshlash va xavfsizlik sarlavhalari |
-| 404.html | Topilmagan sahifa uchun chiroyli xabar |
-| .nojekyll | GitHub Pages ssets papkasini to'g'ri berishi uchun |
-| obots.txt | Qidiruv tizimlariga ruxsat |
-| sw.js | Oflayn ishlash (HTTPS shart) |
-
-Subpapkada ham tekshirilgan: https://sayt.uz/oqi/ ko'rinishida joylashtirilsa,
-barcha fayllar nisbiy yo'l bilan ochiladi.
-
-Bitta eslatma: 404.html ichidagi havolalar ildizga (/) nisbatan yozilgan.
-GitHub Pages'da loyiha subpapkasida (/oqi/) joylashtirsangiz, ulani
-ssets/... va index.html ga o'zgartiring.
+Sayt texnik jihatdan tayyor; asosiy ish — kontentni ko'paytirish.
