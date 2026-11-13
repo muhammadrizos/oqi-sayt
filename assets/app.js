@@ -61,6 +61,38 @@
   function inLib(id) { return state.library.includes(id); }
   function bookById(id) { return BOOKS.find(b => b.id === id); }
 
+  /* ---------- kitob matnlari (data/texts/<id>.md) ---------- */
+  // Format: frontmatter (id, title) + tanada har bir bob "## Bob nomi" qatori bilan boshlanadi,
+  // paragraflar orasida bo'sh qator. CMS (admin/) shu fayllarni tahrirlaydi.
+  function parseTextMD(md) {
+    let body = String(md);
+    const fm = body.match(/^---\s*\r?\n[\s\S]*?\r?\n---\s*\r?\n?/);
+    if (fm) body = body.slice(fm[0].length);
+    const chapters = [];
+    let cur = null;
+    body.split(/\r?\n/).forEach(line => {
+      const m = line.match(/^##\s+(.+?)\s*$/);
+      if (m) { cur = { title: m[1], paragraphs: [] }; chapters.push(cur); return; }
+      if (/^#/.test(line)) return;
+      const t = line.trim();
+      if (!t) return;
+      if (!cur) { cur = { title: "Matn", paragraphs: [] }; chapters.push(cur); }
+      cur.paragraphs.push(t);
+    });
+    return chapters.length ? { chapters: chapters } : null;
+  }
+  function loadText(id) {
+    return fetch("data/texts/" + id + ".md", { cache: "no-store" })
+      .then(r => (r.ok ? r.text() : null))
+      .then(md => {
+        if (!md) return null;
+        const data = parseTextMD(md);
+        if (data) { window.TEXTS = window.TEXTS || {}; window.TEXTS[id] = data; }
+        return data;
+      })
+      .catch(() => null);
+  }
+
   let toastTimer = null;
   function toast(msg) {
     const el = $("#toast");
@@ -444,9 +476,23 @@
     },
     open(id) {
       const b = bookById(id);
-      const data = window.TEXTS && window.TEXTS[id];
       if (!b) return;
-      if (!data) { toast("Bu kitobning matni hali qo'shilmagan"); return; }
+      const cached = window.TEXTS && window.TEXTS[id];
+      if (cached) { this._start(id, cached); return; }
+      // Matn hali yuklanmagan — data/texts/<id>.md dan olamiz
+      if (this._textLoading === id) return;
+      this._textLoading = id;
+      toast("Matn yuklanmoqda…");
+      loadText(id).then(d => {
+        if (this._textLoading !== id) return;
+        this._textLoading = null;
+        if (d) this._start(id, d);
+        else toast("Bu kitobning matni hali qo'shilmagan");
+      });
+    },
+    _start(id, data) {
+      const b = bookById(id);
+      if (!b || !data) return;
       this.id = id;
       const saved = state.progress[id];
       this.ch = Math.min(saved ? saved.chapter || 0 : 0, data.chapters.length - 1);
@@ -591,6 +637,7 @@
       if (!this.id || this.turning) return;
       if (this.coverOpen) { this.turnCover(true); return; }
       const data = window.TEXTS[this.id];
+      if (!data) return;
       if (this.page < this.pageCount - 1) {
         this.turnPage("next", () => {
           this.goToPage(this.page + 1);
@@ -803,12 +850,14 @@
 
   render();
 
-  // Katalog ma'lumotlari — data/books.json (Pages CMS shu faylni tahrirlaydi).
-  // Fayl topilmasa yoki file:// rejimida bo'lsa, assets/data.js dagi zaxira ishlatiladi.
+  // Katalog ma'lumotlari — data/books.json ({"books":[...]}, admin/ paneli shu faylni tahrirlaydi).
+  // Eski to'g'ridan-to'g'ri massiv formati ham qabul qilinadi. Fayl topilmasa yoki
+  // file:// rejimida bo'lsa, assets/data.js dagi zaxira ishlatiladi.
   fetch("data/books.json", { cache: "no-store" })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) {
-      if (Array.isArray(d) && d.length) { BOOKS = d; render(); }
+      const list = d && Array.isArray(d.books) ? d.books : d;
+      if (Array.isArray(list) && list.length) { BOOKS = list; render(); }
     })
     .catch(function () {});
 })();

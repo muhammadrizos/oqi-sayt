@@ -1,5 +1,5 @@
 /* O'QI — oflayn keshi */
-const CACHE = "oqi-v8";
+const CACHE = "oqi-v9";
 const ASSETS = [
   "./",
   "index.html",
@@ -7,14 +7,18 @@ const ASSETS = [
   "assets/app.js",
   "assets/data.js",
   "assets/texts.js",
-  "data/texts/gulliverning-sayohatlari.js",
+  "data/books.json",
+  "data/texts/baxtli-shahzoda.md",
+  "data/texts/oliver-tvist.md",
+  "data/texts/alisa.md",
+  "data/texts/robinzon.md",
+  "data/texts/gulliverning-sayohatlari.md",
   "assets/oqi-wordmark.png",
   "assets/oqi-icon-192.png",
   "assets/oqi-icon-512.png",
   "assets/oqi-og.png",
   "favicon-32.png",
-  "manifest.json",
-  "data/books.json"
+  "manifest.json"
 ];
 
 self.addEventListener("install", (e) => {
@@ -31,8 +35,13 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
 
-  // Katalog ma'lumotlari: avval tarmoq (CMS yangilanishi darhol ko'rinsin), keyin kesh
-  if (new URL(e.request.url).pathname.endsWith("/data/books.json")) {
+  const path = new URL(e.request.url).pathname;
+
+  // Admin panel hech qachon keshlanmasin (Decap yangilanishlari darhol ko'rinsin)
+  if (path.startsWith("/admin")) return;
+
+  // Katalog va matnlar: avval tarmoq (CMS yangilanishi darhol ko'rinsin), keyin kesh
+  if (path.endsWith("/data/books.json") || path.includes("/data/texts/")) {
     e.respondWith(
       fetch(e.request).then((res) => {
         const copy = res.clone();

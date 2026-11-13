@@ -8,14 +8,16 @@ bepul hostingga yuklash mumkin (Render, Netlify, GitHub Pages, Cloudflare Pages)
 ```
 index.html            barcha ekranlar (bosh sahifa, katalog, kitob, o'quvchi, sozlamalar)
 assets/styles.css     dizayn: ranglar, tipografika, animatsiyalar
-assets/app.js         mantiq: qidiruv, o'quvchi, saqlash
+assets/app.js         mantiq: qidiruv, o'quvchi, saqlash, matn yuklovchi
 assets/data.js        zaxira katalog (faqat file:// rejimi uchun)
-data/books.json       ASOSIY katalog — Pages CMS shu faylni tahrirlaydi
-assets/texts.js       kitob matnlari
+data/books.json       ASOSIY katalog — admin panel shu faylni tahrirlaydi
+data/texts/*.md       kitob matnlari (har bir kitob: data/texts/<id>.md)
+assets/texts.js       bo'sh zaxira (matnlar endi .md dan yuklanadi)
+admin/index.html      admin panel sahifasi (Decap CMS)
+admin/config.yml      admin panel sozlamasi
 assets/oqi-*.png      logotip, ikonkalar, OG rasm
 manifest.json         telefonga "ilova sifatida o'rnatish"
 sw.js                 oflayn kesh
-.pages.yml            Pages CMS sozlamasi
 404.html              topilmagan sahifa
 _headers              Netlify uchun keshlash sarlavhalari (Render o'qimaydi)
 robots.txt            qidiruv tizimlari uchun
@@ -40,20 +42,20 @@ publish directory `.` → har commit'da avtomatik deploy.
 
 **GitHub Pages**: Settings → Pages → branch `main`, papka `/ (root)`.
 
-## 3. Kitoblarni brauzerdan tahrirlash (Pages CMS)
+## 3. Kitoblarni brauzerdan tahrirlash (Decap CMS)
 
-1. https://app.pagescms.org → **Sign in with GitHub**
-2. Repozitoriyni tanlang (`muhammadrizos/oqi.uz` yoki sizning repongiz)
-3. Chap menyuda **Kitoblar** → kitobni oching yoki **Add** bilan yangisini qo'shing
-4. **Save** → o'zgarish repoga commit bo'ladi → Render 1–2 daqiqada qayta joylaydi
+Endi tahrirlash `/admin` panelda: **https://oqi-sayt.onrender.com/admin/**
 
-Maydonlar `.pages.yml` da belgilangan: nomi, muallif, janr, til, sahifalar, tavsif,
-muqova ranglari, huquq holati, matn holati.
+- Kitoblar katalogi va matnlarini brauzerdan tahrirlash
+- Save → GitHub commit → Render avtomatik deploy
+
+Batafsil o'rnatish va ishlatish yo'riqnomasi: **README-ADMIN.md**
 
 **Muhim:**
 - `id` har bir kitobda unikal bo'lsin (lotin harflar va chiziqcha)
-- `data/books.json` — asosiy manba; `assets/data.js` faqat file:// uchun zaxira
-- `assets/texts.js` (kitob matnlari) hozircha qo'lda tahrirlanadi
+- `data/books.json` — asosiy manba (`{"books":[...]}` shaklida);
+  `assets/data.js` faqat file:// uchun zaxira
+- Kitob matnlari `data/texts/<id>.md` fayllarida (admin panelda tahrirlanadi)
 
 ## 4. Domen ulash
 
@@ -79,7 +81,7 @@ HTTPS avtomatik yoqiladi. Domen ulangach `index.html` dagi `canonical` va
 
 ## 5. Yangilash tartibi
 
-1. `sw.js` ichidagi `CACHE` qiymatini oshiring (`oqi-v4` → `oqi-v5`)
+1. `sw.js` ichidagi `CACHE` qiymatini oshiring
 2. Fayllarni commit qiling
 3. Hosting o'zi qayta joylaydi; brauzerda Ctrl+F5
 
@@ -100,9 +102,8 @@ yozma litsenziya bo'lishi shart.
 
 ## 7. Hozirgi holat
 
-- 16 kitob katalogda
-- 1 ta to'liq matn («Baxtli shahzoda», o'zbekcha tarjima)
-- 3 ta namuna parcha
+- 17 kitob katalogda
+- 1 ta to'liq matn, 4 ta namuna parcha
 - 12 tasida «Matn kutilmoqda»
 
 Sayt texnik jihatdan tayyor; asosiy ish — kontentni ko'paytirish.

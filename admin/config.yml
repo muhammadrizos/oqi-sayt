@@ -1,0 +1,153 @@
+# ============================================================
+# O'QI — admin panel sozlamasi (Decap CMS)
+# ============================================================
+site_url: https://oqi-sayt.onrender.com
+logo_url: https://oqi-sayt.onrender.com/assets/oqi-wordmark.png
+
+backend:
+  name: github
+  repo: muhammadrizos/oqi-sayt
+  branch: main
+
+  # --- !! BIR MARTALIK SOZLASH (DecapBridge) !! ---
+  # Decap CMS GitHub bilan to'g'ridan-to'g'ri ulanolmaydi — OAuth vositachi kerak.
+  # 1) https://decapbridge.com -> "Sign in with GitHub"
+  # 2) "Add Site" -> muhammadrizos/oqi-sayt reponi ulang (GitHub App install)
+  # 3) DecapBridge sizga tayyor config.yml beradi — quyidagi 2 qatorni O'SHA
+  #    bilan almashtiring (SITE-ID o'ziga xos bo'ladi):
+  #
+  # base_url: https://auth.decapbridge.com/sites/BU-YERGA-SIZNING-SITE-ID
+  # auth_endpoint: /auth
+
+# Tahrirlanadigan fayllar
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  # ---------- 1. KATALOG ----------
+  - name: books
+    label: "📖 Kitoblar katalogi"
+    files:
+      - name: books-file
+        label: "Kitoblar"
+        file: "data/books.json"
+        format: json
+        editor:
+          preview: false
+        fields:
+          - name: books
+            label: "Kitoblar ro'yxati"
+            widget: list
+            collapsed: true
+            fields:
+              - label: "ID (lotin harflar, chiziqcha bilan)"
+                name: id
+                widget: string
+                required: true
+                hint: "Masalan: baxtli-shahzoda. Matn fayli: data/texts/<ID>.md"
+              - label: "Nomi"
+                name: title
+                widget: string
+                required: true
+              - label: "Asl nomi"
+                name: original
+                widget: string
+                required: false
+              - label: "Muallif"
+                name: author
+                widget: string
+                required: true
+              - label: "Muallif to'liq (yillari bilan)"
+                name: authorFull
+                widget: string
+                required: false
+                hint: "Masalan: Oscar Wilde (1854–1900)"
+              - label: "Yil"
+                name: year
+                widget: number
+                required: false
+              - label: "Janr"
+                name: genre
+                widget: select
+                options: [roman, ertak, drama, sarguzasht, detektiv, fantastika, sheriyat]
+              - label: "Til"
+                name: lang
+                widget: select
+                default: uz
+                options: [uz, ru, en]
+              - label: "Sahifalar soni"
+                name: pages
+                widget: number
+                required: false
+              - label: "Tavsif"
+                name: desc
+                widget: text
+              - label: "Muqova ranglari"
+                name: cover
+                widget: object
+                fields:
+                  - label: "Asosiy rang"
+                    name: c1
+                    widget: string
+                    hint: "Masalan #f5c62b"
+                  - label: "Ikkinchi rang"
+                    name: c2
+                    widget: string
+                    hint: "Masalan #e0a516"
+                  - label: "To'q matn rangi (faqat och muqovalar uchun)"
+                    name: ink
+                    widget: string
+                    required: false
+              - label: "Huquq holati"
+                name: license
+                widget: select
+                default: public-domain
+                options: [public-domain, cc-by-4.0, licensed, checking]
+                hint: "Huquqi tekshirilmagan asarni 'full' qilmang!"
+              - label: "Manba"
+                name: source
+                widget: string
+                required: false
+              - label: "Tarjima"
+                name: translation
+                widget: string
+                required: false
+              - label: "Qo'shilgan tartibi (kichik raqam = yangiroq)"
+                name: added
+                widget: number
+                default: 100
+              - label: "Ommaboplik (0–100)"
+                name: popularity
+                widget: number
+                default: 50
+              - label: "Matn holati"
+                name: textKind
+                widget: select
+                default: pending
+                options: [full, sample, pending]
+                hint: "full yoki sample bo'lsa data/texts/<ID>.md fayli bo'lishi SHART"
+
+  # ---------- 2. KITOB MATNLARI ----------
+  - name: texts
+    label: "📚 Kitob matnlari"
+    folder: "data/texts"
+    create: true
+    slug: "{{fields.id}}"
+    extension: md
+    sortable_fields: [title, id]
+    summary: "{{title}} — {{id}}"
+    editor:
+      preview: false
+    fields:
+      - label: "ID (katalogdagi kitob ID si bilan BIR XIL bo'lsin!)"
+        name: id
+        widget: string
+        required: true
+      - label: "Sarlavha"
+        name: title
+        widget: string
+        required: true
+      - label: "Matn"
+        name: body
+        widget: markdown
+        hint: "Har bir bobni '## Bob nomi' qatori bilan boshlang. Paragraflar orasiga bo'sh qator qo'ying."
