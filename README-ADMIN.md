@@ -20,11 +20,16 @@ bepul **DecapBridge** xizmati:
 
 1. https://decapbridge.com → **Sign in with GitHub** (GitHub hisobingiz bilan kiring)
 2. **Add Site** (yoki "Create site") tugmasini bosing
-3. Repo sifatida **muhammadrizos/oqi-sayt** ni tanlang
-4. GitHub App o'rnatish so'raladi → **Install** (faqat shu repoga ruxsat bering)
-5. DecapBridge sizga tayyor **config.yml** ko'rsatadi — undagi `backend:`
-   blokini nusxalab oling (u `base_url: https://auth.decapbridge.com/sites/...`
-   bilan boshlanadi)
+3. Git provider sifatida **GitHub** ni, repo sifatida `muhammadrizos/oqi-sayt` ni tanlang.
+4. **Github access token** maydoniga ushbu repo bilan cheklangan fine-grained token kiriting.
+   Tokenni faqat DecapBridge formasiga kiriting; chatga yubormang yoki skrinshotda ko'rsatmang.
+   Token uchun `Contents: Read and write` va `Pull requests: Read and write` ruxsatlari
+   kerak; boshqa repolarga ruxsat bermang va imkon bo'lsa amal muddatini cheklang.
+5. **Decap CMS login URL** ga
+   `https://oqi-sayt.onrender.com/admin/index.html` ni kiriting.
+6. **Auth type** sifatida **PKCE** ni tanlang. Admin sahifa Decap CMS 3.8.3+ ni yuklaydi.
+7. Qolgan maydonlarni to'ldirib saytni yarating. DecapBridge ko'rsatgan tayyor
+   `backend:` sozlamalaridan `base_url` va `auth_endpoint` qatorlarini nusxalang.
 
 ### 1.2. config.yml ni yangilang
 
@@ -168,7 +173,7 @@ Keyingi bob matni...
 | Muammo | Yechim |
 |---|---|
 | `/admin/` topilmadi (404) | 1.4 dagi Redirect Rule ni qo'shing; manzil oxirida `/` bo'lsin |
-| "Login with GitHub" bosilganda xato | DecapBridge'dagi site o'chirmagan bo'lishi mumkin — config.yml'dagi `base_url` ni qayta nusxalang |
-| Panelda "repo not found" | GitHub App faqat o'qishga ruxsat bergan — DecapBridge'da repoga yozish (contents: write) ruxsatini tekshiring |
+| Login ishlamaydi | DecapBridge'dan `base_url` va `auth_endpoint` qatorlarini aynan ko'chirganingizni, Auth type va CMS login URL to'g'ri ekanini tekshiring |
+| Panelda "repo not found" yoki save xatosi | Token faqat `muhammadrizos/oqi-sayt` reposiga tegishli ekanini, Contents va Pull requests uchun Read and write ruxsatlari borligini tekshiring |
 | Saytda yangi kitob ko'rinmaydi | Render deploy holatini tekshiring + Ctrl+F5; `textKind` va matn fayli `id` mosligini tekshiring |
 | Matn ochilmaydi, toast chiqadi | `data/texts/<id>.md` mavjudligini va `id` mosligini tekshiring |

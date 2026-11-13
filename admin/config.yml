@@ -12,9 +12,9 @@ backend:
   # --- !! BIR MARTALIK SOZLASH (DecapBridge) !! ---
   # Decap CMS GitHub bilan to'g'ridan-to'g'ri ulanolmaydi — OAuth vositachi kerak.
   # 1) https://decapbridge.com -> "Sign in with GitHub"
-  # 2) "Add Site" -> muhammadrizos/oqi-sayt reponi ulang (GitHub App install)
-  # 3) DecapBridge sizga tayyor config.yml beradi — quyidagi 2 qatorni O'SHA
-  #    bilan almashtiring (SITE-ID o'ziga xos bo'ladi):
+  # 2) "Add Site" -> muhammadrizos/oqi-sayt va /admin/index.html ni kiriting.
+  # 3) DecapBridge so'ragan tokenni faqat o'sha formaga kiriting; hech kimga yubormang.
+  # 4) DecapBridge bergan config.yml dan quyidagi 2 qatorni ko'chiring:
   #
   # base_url: https://auth.decapbridge.com/sites/BU-YERGA-SIZNING-SITE-ID
   # auth_endpoint: /auth
